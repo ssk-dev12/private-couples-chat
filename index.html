@@ -1,205 +1,244 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <style>
-  body {
-    font-family: Arial, sans-serif;
-    background-color: #f1f5f9;
-    margin: 0;
-    padding: 16px;
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Private Couples Chat</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f1f5f9;
+      margin: 0;
+      padding: 16px;
+    }
 
-  #app {
-    max-width: 400px;
-    margin: 20px auto;
-    background-color: #ffffff;
-    border-radius: 16px;
-    padding: 16px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  }
+    #app {
+      max-width: 400px;
+      margin: 20px auto;
+      background-color: #ffffff;
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
 
-  #header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-  }
+    #header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
 
-  #header h1 {
-    font-size: 18px;
-    margin: 0;
-  }
+    #header h1 {
+      font-size: 18px;
+      margin: 0;
+    }
 
-  #delete-btn {
-    background-color: #fee2e2;
-    color: #b91c1c;
-    border: none;
-    padding: 6px 10px;
-    border-radius: 8px;
-    cursor: pointer;
-  }
+    #delete-btn {
+      background-color: #fee2e2;
+      color: #b91c1c;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
 
-  #connect-box,
-  #send-box {
-    display: flex;
-    gap: 8px;
-  }
+    #connect-box,
+    #send-box {
+      display: flex;
+      gap: 8px;
+    }
 
-  input {
-    flex: 1;
-    padding: 10px;
-    border: 1px solid #cbd5e1;
-    border-radius: 10px;
-  }
+    input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+    }
 
-  #add-btn,
-  #send-btn {
-    background-color: #4f46e5;
-    color: #ffffff;
-    border: none;
-    padding: 10px 14px;
-    border-radius: 10px;
-    cursor: pointer;
-  }
+    #add-btn,
+    #send-btn {
+      background-color: #4f46e5;
+      color: #ffffff;
+      border: none;
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
 
-  #chat-box {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    height: 260px;
-    overflow-y: auto;
-    background-color: #f8fafc;
-    border-radius: 12px;
-    padding: 12px;
-    margin: 12px 0;
-  }
+    #chat-box {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      height: 260px;
+      overflow-y: auto;
+      background-color: #f8fafc;
+      border-radius: 12px;
+      padding: 12px;
+      margin: 12px 0;
+    }
 
-  .msg {
-    margin: 0;
-    padding: 8px 12px;
-    border-radius: 12px;
-    max-width: 75%;
-    font-size: 14px;
-  }
+    .msg {
+      margin: 0;
+      padding: 8px 12px;
+      border-radius: 12px;
+      max-width: 75%;
+      font-size: 14px;
+    }
 
-  .partner {
-    background-color: #e2e8f0;
-    color: #0f172a;
-    align-self: flex-start;
-  }
+    .partner {
+      background-color: #e2e8f0;
+      color: #0f172a;
+      align-self: flex-start;
+    }
 
-  .you {
-    background-color: #0d9488;
-    color: #ffffff;
-    align-self: flex-end;
-  }
-</style>
+    .you {
+      background-color: #4f46e5;
+      color: #ffffff;
+      align-self: flex-end;
+    }
+  </style>
 </head>
 <body>
-    <div id="app">
-  <!-- 1. Header -->
-  <div id="header">
-    <h1>Private Chat</h1>
-    <button id="delete-btn">Delete Partner</button>
+  <div id="app">
+    <div id="header">
+      <h1>Private Chat</h1>
+      <button id="delete-btn">Delete Partner</button>
+    </div>
+
+    <div id="connect-box">
+      <input id="code-input" type="text" placeholder="Enter partner code..." />
+      <button id="add-btn">Add</button>
+    </div>
+
+    <div id="chat-box">
+      <p class="msg partner">Enter a partner code above to start chatting.</p>
+    </div>
+
+    <div id="send-box">
+      <input id="msg-input" type="text" placeholder="Type a message..." />
+      <button id="send-btn">Send</button>
+    </div>
   </div>
 
-  <!-- 2. Add Partner -->
-  <div id="connect-box">
-    <input id="code-input" type="text" placeholder="Enter partner code..." />
-    <button id="add-btn">Add</button>
-  </div>
+  <script>
+    const SUPABASE_URL = 'https://vlixrcqsoaryqkxecbdm.supabase.co';
+    const SUPABASE_KEY = 'PASTE_YOUR_PUBLISHABLE_KEY_HERE';
+    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  <!-- 3. Chat Messages -->
-  <div id="chat-box">
-  <p class="msg partner">Hey, free tonight?</p>
-  <p class="msg you">Yes! Dinner at 8?</p>
-  </div>
+    const headerTitle = document.querySelector('#header h1');
+    const codeInput = document.getElementById('code-input');
+    const addBtn = document.getElementById('add-btn');
+    const deleteBtn = document.getElementById('delete-btn');
+    const chatBox = document.getElementById('chat-box');
+    const msgInput = document.getElementById('msg-input');
+    const sendBtn = document.getElementById('send-btn');
 
-  <!-- 4. Send Message -->
-  <div id="send-box">
-    <input id="msg-input" type="text" placeholder="Type a message..." />
-    <button id="send-btn">Send</button>
-  </div>
-</div>
-<script>
-  const headerTitle = document.querySelector('#header h1');
-  const codeInput = document.getElementById('code-input');
-  const addBtn = document.getElementById('add-btn');
-  const deleteBtn = document.getElementById('delete-btn');
-  const chatBox = document.getElementById('chat-box');
-  const msgInput = document.getElementById('msg-input');
-  const sendBtn = document.getElementById('send-btn');
+    let mySenderId = localStorage.getItem('my_sender_id');
+    if (!mySenderId) {
+      mySenderId = 'user_' + Math.random().toString(36).slice(2, 10);
+      localStorage.setItem('my_sender_id', mySenderId);
+    }
 
-  let partnerCode = '';
-  let messages = [];
+    let partnerCode = localStorage.getItem('partner_code') || '';
+    let activeChannel = null;
 
-  function saveState() {
-    localStorage.setItem('partner_code', partnerCode);
-    localStorage.setItem('chat_messages', JSON.stringify(messages));
-  }
-
-  function renderMessages() {
-    chatBox.innerHTML = '';
-    messages.forEach((msg) => {
+    function appendBubble(sender, text) {
       const bubble = document.createElement('p');
-      bubble.className = 'msg ' + msg.sender;
-      bubble.textContent = msg.text;
+      bubble.className = 'msg ' + sender;
+      bubble.textContent = text;
       chatBox.appendChild(bubble);
-    });
-    chatBox.scrollTop = chatBox.scrollHeight;
-  }
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
 
-  function loadState() {
-    partnerCode = localStorage.getItem('partner_code') || '';
-    const saved = localStorage.getItem('chat_messages');
-    messages = saved ? JSON.parse(saved) : [];
+    async function joinRoom(code) {
+      if (activeChannel) {
+        await db.removeChannel(activeChannel);
+        activeChannel = null;
+      }
+
+      partnerCode = code;
+      localStorage.setItem('partner_code', partnerCode);
+      headerTitle.textContent = 'Chat: #' + partnerCode;
+      chatBox.innerHTML = '';
+
+      const { data, error } = await db
+        .from('messages')
+        .select('*')
+        .eq('room_code', partnerCode)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        appendBubble('partner', 'Error loading messages: ' + error.message);
+        return;
+      }
+
+      if (data.length === 0) {
+        appendBubble('partner', 'Connected to room #' + partnerCode + '. Say hello!');
+      } else {
+        data.forEach((row) => {
+          const who = row.sender_id === mySenderId ? 'you' : 'partner';
+          appendBubble(who, row.content);
+        });
+      }
+
+      activeChannel = db
+        .channel('room-' + partnerCode)
+        .on(
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'messages', filter: 'room_code=eq.' + partnerCode },
+          (payload) => {
+            const row = payload.new;
+            const who = row.sender_id === mySenderId ? 'you' : 'partner';
+            appendBubble(who, row.content);
+          }
+        )
+        .subscribe();
+    }
+
+    addBtn.addEventListener('click', () => {
+      const code = codeInput.value.trim();
+      if (!code) return;
+      codeInput.value = '';
+      joinRoom(code);
+    });
+
+    deleteBtn.addEventListener('click', async () => {
+      if (activeChannel) {
+        await db.removeChannel(activeChannel);
+        activeChannel = null;
+      }
+      partnerCode = '';
+      localStorage.removeItem('partner_code');
+      headerTitle.textContent = 'Private Chat';
+      chatBox.innerHTML = '';
+      appendBubble('partner', 'Partner removed. Enter a code to start a new chat.');
+    });
+
+    async function sendMessage() {
+      const text = msgInput.value.trim();
+      if (!partnerCode || !text) return;
+      msgInput.value = '';
+
+      const { error } = await db.from('messages').insert({
+        room_code: partnerCode,
+        sender_id: mySenderId,
+        content: text
+      });
+
+      if (error) {
+        appendBubble('partner', 'Could not send: ' + error.message);
+      }
+    }
+
+    sendBtn.addEventListener('click', sendMessage);
+    msgInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
 
     if (partnerCode) {
-      headerTitle.textContent = 'Chat: #' + partnerCode;
-    } else {
-      headerTitle.textContent = 'Private Chat';
+      joinRoom(partnerCode);
     }
-    renderMessages();
-  }
-
-  addBtn.addEventListener('click', () => {
-    const code = codeInput.value.trim();
-    if (!code) return;
-    partnerCode = code;
-    messages = [{ sender: 'partner', text: 'Connected with partner #' + partnerCode }];
-    headerTitle.textContent = 'Chat: #' + partnerCode;
-    codeInput.value = '';
-    saveState();
-    renderMessages();
-  });
-
-  deleteBtn.addEventListener('click', () => {
-    partnerCode = '';
-    messages = [{ sender: 'partner', text: 'Partner removed. Enter a code to start a new chat.' }];
-    headerTitle.textContent = 'Private Chat';
-    localStorage.removeItem('partner_code');
-    localStorage.removeItem('chat_messages');
-    renderMessages();
-  });
-
-  function sendMessage() {
-    const text = msgInput.value.trim();
-    if (!partnerCode || !text) return;
-    messages.push({ sender: 'you', text });
-    msgInput.value = '';
-    saveState();
-    renderMessages();
-  }
-
-  sendBtn.addEventListener('click', sendMessage);
-  msgInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') sendMessage();
-  });
-
-  loadState();
-</script>
+  </script>
 </body>
 </html>
