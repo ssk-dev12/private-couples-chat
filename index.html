@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f1f5f9;
+    margin: 0;
+    padding: 16px;
+  }
+
+  #app {
+    max-width: 400px;
+    margin: 20px auto;
+    background-color: #ffffff;
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  #header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  #header h1 {
+    font-size: 18px;
+    margin: 0;
+  }
+
+  #delete-btn {
+    background-color: #fee2e2;
+    color: #b91c1c;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+
+  #connect-box,
+  #send-box {
+    display: flex;
+    gap: 8px;
+  }
+
+  input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+  }
+
+  #add-btn,
+  #send-btn {
+    background-color: #4f46e5;
+    color: #ffffff;
+    border: none;
+    padding: 10px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+
+  #chat-box {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    height: 260px;
+    overflow-y: auto;
+    background-color: #f8fafc;
+    border-radius: 12px;
+    padding: 12px;
+    margin: 12px 0;
+  }
+
+  .msg {
+    margin: 0;
+    padding: 8px 12px;
+    border-radius: 12px;
+    max-width: 75%;
+    font-size: 14px;
+  }
+
+  .partner {
+    background-color: #e2e8f0;
+    color: #0f172a;
+    align-self: flex-start;
+  }
+
+  .you {
+    background-color: #0d9488;
+    color: #ffffff;
+    align-self: flex-end;
+  }
+</style>
+</head>
+<body>
+    <div id="app">
+  <!-- 1. Header -->
+  <div id="header">
+    <h1>Private Chat</h1>
+    <button id="delete-btn">Delete Partner</button>
+  </div>
+
+  <!-- 2. Add Partner -->
+  <div id="connect-box">
+    <input id="code-input" type="text" placeholder="Enter partner code..." />
+    <button id="add-btn">Add</button>
+  </div>
+
+  <!-- 3. Chat Messages -->
+  <div id="chat-box">
+  <p class="msg partner">Hey, free tonight?</p>
+  <p class="msg you">Yes! Dinner at 8?</p>
+  </div>
+
+  <!-- 4. Send Message -->
+  <div id="send-box">
+    <input id="msg-input" type="text" placeholder="Type a message..." />
+    <button id="send-btn">Send</button>
+  </div>
+</div>
+<script>
+  const headerTitle = document.querySelector('#header h1');
+  const codeInput = document.getElementById('code-input');
+  const addBtn = document.getElementById('add-btn');
+  const deleteBtn = document.getElementById('delete-btn');
+  const chatBox = document.getElementById('chat-box');
+  const msgInput = document.getElementById('msg-input');
+  const sendBtn = document.getElementById('send-btn');
+
+  let partnerCode = '';
+  let messages = [];
+
+  function saveState() {
+    localStorage.setItem('partner_code', partnerCode);
+    localStorage.setItem('chat_messages', JSON.stringify(messages));
+  }
+
+  function renderMessages() {
+    chatBox.innerHTML = '';
+    messages.forEach((msg) => {
+      const bubble = document.createElement('p');
+      bubble.className = 'msg ' + msg.sender;
+      bubble.textContent = msg.text;
+      chatBox.appendChild(bubble);
+    });
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  function loadState() {
+    partnerCode = localStorage.getItem('partner_code') || '';
+    const saved = localStorage.getItem('chat_messages');
+    messages = saved ? JSON.parse(saved) : [];
+
+    if (partnerCode) {
+      headerTitle.textContent = 'Chat: #' + partnerCode;
+    } else {
+      headerTitle.textContent = 'Private Chat';
+    }
+    renderMessages();
+  }
+
+  addBtn.addEventListener('click', () => {
+    const code = codeInput.value.trim();
+    if (!code) return;
+    partnerCode = code;
+    messages = [{ sender: 'partner', text: 'Connected with partner #' + partnerCode }];
+    headerTitle.textContent = 'Chat: #' + partnerCode;
+    codeInput.value = '';
+    saveState();
+    renderMessages();
+  });
+
+  deleteBtn.addEventListener('click', () => {
+    partnerCode = '';
+    messages = [{ sender: 'partner', text: 'Partner removed. Enter a code to start a new chat.' }];
+    headerTitle.textContent = 'Private Chat';
+    localStorage.removeItem('partner_code');
+    localStorage.removeItem('chat_messages');
+    renderMessages();
+  });
+
+  function sendMessage() {
+    const text = msgInput.value.trim();
+    if (!partnerCode || !text) return;
+    messages.push({ sender: 'you', text });
+    msgInput.value = '';
+    saveState();
+    renderMessages();
+  }
+
+  sendBtn.addEventListener('click', sendMessage);
+  msgInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') sendMessage();
+  });
+
+  loadState();
+</script>
+</body>
+</html>
